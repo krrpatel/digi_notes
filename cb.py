@@ -2,6 +2,8 @@ import pdfplumber
 from haystack.document_stores import InMemoryDocumentStore
 from haystack.nodes import EmbeddingRetriever, FARMReader
 from haystack.pipelines import ExtractiveQAPipeline
+import warnings
+warnings.filterwarnings("ignore")
 
 def extract_text_from_pdf(pdf_path):
     text = ""
