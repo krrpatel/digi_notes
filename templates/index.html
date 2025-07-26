@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OCR PDF Cleaner</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>📚 OCR PDF/Image Cleaner</h1>
+    <form action="/" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".pdf,image/*" required />
+      <button type="submit">Upload & Clean</button>
+    </form>
+    {% if error %}
+      <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if download_path %}
+      <p>✅ Done! <a href="{{ download_path }}">Download Cleaned PDF</a></p>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin-top: 50px;
+  background-color: #f4f4f4;
+}
+.container {
+  background: white;
+  padding: 20px;
+  margin: auto;
+  width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px gray;
+}
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.error {
+  color: red;
+}
