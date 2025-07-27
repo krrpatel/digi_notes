@@ -125,7 +125,7 @@ def askbot(uid):
     document_store = InMemoryDocumentStore(embedding_dim=384)
     retriever = EmbeddingRetriever(
         document_store=document_store,
-        embedding_model="chatbot_models/embedding",
+        embedding_model="local_models/chatbot_models/embedding",
         use_gpu=False
     )
 
@@ -133,7 +133,7 @@ def askbot(uid):
     document_store.write_documents(docs)
     document_store.update_embeddings(retriever)
 
-    reader = FARMReader(model_name_or_path="chatbot_models/reader", use_gpu=False)
+    reader = FARMReader(model_name_or_path="local_models/chatbot_models/reader", use_gpu=False)
     pipeline = ExtractiveQAPipeline(reader, retriever)
 
     # Define inner function for querying
