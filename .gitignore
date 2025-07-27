@@ -13,3 +13,7 @@ __pycache__/
 local_models/
 outputs/
 uploads/
+*.pdf
+*.jpg
+chatbot_models/
+parsed_pdf.txt
