@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DigiNotes Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-2xl font-bold mb-4">📄 Upload Notes</h2>
+    <form id="uploadForm" method="POST" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg" required class="mb-4 block">
+      <label class="flex items-center mb-4">
+        <input type="checkbox" name="use_ai" class="mr-2">
+        Use AI for Beautification
+      </label>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Upload</button>
+    </form>
+
+    <div id="spinner" class="hidden mt-4 text-center">
+      <p class="text-gray-600">⏳ Processing...</p>
+    </div>
+
+    <div id="result" class="mt-6 hidden">
+      <a id="downloadLink" class="text-blue-600 underline">Download Cleaned PDF</a>
+      <br><br>
+      <a id="chatLink" class="bg-green-600 text-white px-4 py-2 rounded hidden">💬 Chat With Your Notes</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const spinner = document.getElementById('spinner');
+    const result = document.getElementById('result');
+    const link = document.getElementById('downloadLink');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      spinner.classList.remove('hidden');
+      result.classList.add('hidden');
+
+      const formData = new FormData(form);
+      const res = await fetch('/process', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      spinner.classList.add('hidden');
+      link.href = data.download_url;
+
+      const chatLink = document.getElementById('chatLink');
+      chatLink.href = data.chat_url;
+      chatLink.classList.remove('hidden');
+
+      result.classList.remove('hidden');
+
+    });
+  </script>
+</body>
+</html>

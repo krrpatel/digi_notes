@@ -1,9 +1,11 @@
+import fitz
 import pdfplumber
 from haystack.document_stores import InMemoryDocumentStore
 from haystack.nodes import EmbeddingRetriever, FARMReader
 from haystack.pipelines import ExtractiveQAPipeline
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import google.generativeai as genai
+import os
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -103,6 +105,58 @@ def run_chatbot(pdf_path=None):
                 print("🤖 Answer:", answers[0].answer)
             else:
                 print("🤖 Sorry, I couldn't find an answer.")
+
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with fitz.open(pdf_path) as doc:
+        for page in doc:
+            text += page.get_text()
+    return text
+
+def askbot(uid):
+    pdf_path = f"outputs/{uid}.pdf"
+    if not os.path.exists(pdf_path):
+        raise FileNotFoundError(f"PDF not found: {pdf_path}")
+
+    # Extract full context for Gemini
+    full_context = extract_text_from_pdf(pdf_path)
+
+    # Setup Haystack QA Pipeline
+    document_store = InMemoryDocumentStore(embedding_dim=384)
+    retriever = EmbeddingRetriever(
+        document_store=document_store,
+        embedding_model="chatbot_models/embedding",
+        use_gpu=False
+    )
+
+    docs = [{"content": full_context}]
+    document_store.write_documents(docs)
+    document_store.update_embeddings(retriever)
+
+    reader = FARMReader(model_name_or_path="chatbot_models/reader", use_gpu=False)
+    pipeline = ExtractiveQAPipeline(reader, retriever)
+
+    # Define inner function for querying
+    def query_fn(question, use_ai=False):
+        prediction = pipeline.run(
+            query=question,
+            params={"Retriever": {"top_k": 3}, "Reader": {"top_k": 1}}
+        )
+        answers = prediction["answers"]
+
+        if use_ai:
+            prompt = f"Answer to the point from the document below.\n\nQuestion: {question}\n\nDocument:\n{full_context[:30000]}"
+            try:
+                gemini_response = gemini.generate_content(prompt)
+                return gemini_response.text.strip()
+            except Exception as e:
+                print("⚠️ Gemini error, falling back:", e)
+
+        if answers:
+            return answers[0].answer
+        return "❌ Sorry, I couldn't find an answer."
+
+    return query_fn
 
 if __name__ == "__main__":
     run_chatbot()

@@ -1,4 +1,5 @@
 import os
+import uuid
 import io
 import re
 import cv2
@@ -24,6 +25,37 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Ignore UserWarnings
 warnings.filterwarnings("ignore", category=UserWarning)
+
+def run_pipeline(file_path, use_ai=False):
+    ext = os.path.splitext(file_path)[1].lower()
+
+    if ext == ".pdf":
+        print("📄 PDF detected. Processing with OCR...")
+        text = process_pdf(file_path)
+    elif ext in [".png", ".jpg", ".jpeg", ".bmp", ".tiff"]:
+        print("🖼️ Image detected. Processing with OCR...")
+        text = process_image(file_path)
+    else:
+        print("❌ Unsupported file type.")
+        return None
+
+    print("🧹 Cleaning OCR output...")
+    intermediate_text = clean_ocr_text(text)
+
+    if use_ai:
+        print("🔧 Beautifying the text with Gemini...")
+        final_output = beautify_with_gemini(intermediate_text)
+    else:
+        print("💾 Skipping AI beautification. Using cleaned text.")
+        final_output = intermediate_text
+
+    unique_id = str(uuid.uuid4())[:8]
+    pdf_path = os.path.join("outputs", f"{unique_id}.pdf")
+    os.makedirs("outputs", exist_ok=True)
+    save_as_pdf(pdf_path, final_output, title="Cleaned Document")
+
+    print(f"✅ Cleaned PDF saved to: {pdf_path}")
+    return pdf_path
 
 def save_as_pdf(output_path, text, title=""):
     from reportlab.pdfgen import canvas
